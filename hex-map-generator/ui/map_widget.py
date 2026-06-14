@@ -1,23 +1,32 @@
 """
 地图渲染引擎 — 六边形地图绘制、图层切换、交互编辑
 """
-from __future__ import annotations
-import math
-from typing import Dict, List, Optional, Set, Tuple
 
-from PySide6.QtCore import Qt, QPointF, QRectF, Signal
+from __future__ import annotations
+
+import math
+from typing import Dict, Optional, Set, Tuple
+
+import numpy as np
+from PySide6.QtCore import QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import (
-    QPainter, QColor, QPen, QBrush,
-    QFont, QFontMetrics, QPolygonF,
+    QBrush,
+    QColor,
+    QFont,
+    QFontMetrics,
+    QPainter,
+    QPen,
+    QPolygonF,
 )
 from PySide6.QtWidgets import QWidget
 
-import numpy as np
-
 from core.hex_grid import HexCoord, HexGrid
 from core.terrain_gen import (
-    TerrainData, SETTLEMENT_NONE, SETTLEMENT_VILLAGE,
-    SETTLEMENT_TOWN, SETTLEMENT_CITY, SETTLEMENT_CAPITAL,
+    SETTLEMENT_CAPITAL,
+    SETTLEMENT_CITY,
+    SETTLEMENT_NONE,
+    SETTLEMENT_TOWN,
+    TerrainData,
 )
 from utils.colors import BIOME_COLORS, FEATURE_COLORS
 
@@ -76,9 +85,15 @@ class MapWidget(QWidget):
         # 地图尺寸缓存
         self.map_bounds = QRectF()
 
-    def set_map_data(self, hex_grid: HexGrid, terrain_data: Dict[HexCoord, TerrainData],
-                     elevation: np.ndarray, moisture: np.ndarray,
-                     temperature: np.ndarray, coord_to_idx: Dict[HexCoord, int]):
+    def set_map_data(
+        self,
+        hex_grid: HexGrid,
+        terrain_data: Dict[HexCoord, TerrainData],
+        elevation: np.ndarray,
+        moisture: np.ndarray,
+        temperature: np.ndarray,
+        coord_to_idx: Dict[HexCoord, int],
+    ):
         """设置地图数据"""
         self.hex_grid = hex_grid
         self.terrain_data = terrain_data
@@ -93,8 +108,8 @@ class MapWidget(QWidget):
         """计算地图边界"""
         if not self.hex_grid:
             return
-        min_x = min_y = float('inf')
-        max_x = max_y = float('-inf')
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
         for hc in self.hex_grid.hexes:
             cx, cy = self.hex_grid.hex_center(hc, self.hex_size)
             min_x = min(min_x, cx - self.hex_size)
@@ -142,9 +157,9 @@ class MapWidget(QWidget):
         # 视锥裁剪 - 只绘制可见区域的六边形
         vis_center_x = self.width() / 2 + self.pan_offset.x()
         vis_center_y = self.height() / 2 + self.pan_offset.y()
-        vis_radius = math.sqrt(
-            (self.width() / 2) ** 2 + (self.height() / 2) ** 2
-        ) + self.hex_size * 2
+        vis_radius = (
+            math.sqrt((self.width() / 2) ** 2 + (self.height() / 2) ** 2) + self.hex_size * 2
+        )
 
         for hc in self.hex_grid.hexes:
             td = self.terrain_data.get(hc)
@@ -313,8 +328,11 @@ class MapWidget(QWidget):
 
     def _draw_resources(self, painter: QPainter):
         text_symbols = {
-            "wood": "W", "iron": "I", "gold": "G",
-            "food": "F", "stone": "S",
+            "wood": "W",
+            "iron": "I",
+            "gold": "G",
+            "food": "F",
+            "stone": "S",
         }
         font = QFont("sans-serif", max(7, int(self.hex_size * 0.4)), QFont.Bold)
         painter.setFont(font)
@@ -336,10 +354,13 @@ class MapWidget(QWidget):
 
     def _draw_shipping_routes(self, painter: QPainter):
         # QPen 移到循环外避免重复构造
-        painter.setPen(QPen(
-            FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
-            1.0, Qt.DashLine,
-        ))
+        painter.setPen(
+            QPen(
+                FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
+                1.0,
+                Qt.DashLine,
+            )
+        )
         drawn_edges: Set[Tuple[int, int]] = set()
         for hc, td in self.terrain_data.items():
             if not td.shipping:
@@ -375,10 +396,7 @@ class MapWidget(QWidget):
                 text = text[:max_chars] + "…"
             tw = fm.horizontalAdvance(text)
             painter.setPen(QPen(QColor(255, 255, 255, 200), 1.0))
-            painter.drawText(
-                QPointF(cx - tw / 2, cy + self.hex_size * 0.7),
-                text
-            )
+            painter.drawText(QPointF(cx - tw / 2, cy + self.hex_size * 0.7), text)
 
     def mousePressEvent(self, event):
         if not self.hex_grid:
@@ -467,6 +485,7 @@ class MapWidget(QWidget):
             else:
                 resources = ["wood", "iron", "gold", "food", "stone"]
                 import random as _random
+
                 td.resource = _random.choice(resources)
                 td.resource_amount = _random.randint(1, 4)
         elif self.edit_tool == "erase":
@@ -483,6 +502,7 @@ class MapWidget(QWidget):
         prefixes = ["河", "山", "林", "湖", "溪", "谷", "岚", "雾", "霜", "风", "云", "星"]
         suffixes = ["村", "庄", "屯", "寨", "店", "镇", "集", "堡", "城"]
         import random as _random
+
         return f"{_random.choice(prefixes)}{_random.choice(suffixes)}"
 
     def fit_to_view(self):

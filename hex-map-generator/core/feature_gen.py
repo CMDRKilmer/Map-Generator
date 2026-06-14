@@ -1,26 +1,38 @@
 """
 特性生成系统 — 河流、聚落、道路、资源、航线
 """
+
 from __future__ import annotations
-from heapq import heappush, heappop
+
+from heapq import heappop, heappush
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
-from core.hex_grid import HexCoord, HEX_DIRECTIONS
+from core.hex_grid import HexCoord
 from core.terrain_gen import (
-    TerrainData, SETTLEMENT_NONE, SETTLEMENT_VILLAGE,
-    SETTLEMENT_TOWN, SETTLEMENT_CITY, SETTLEMENT_CAPITAL,
-    RESOURCE_WOOD, RESOURCE_IRON, RESOURCE_GOLD,
-    RESOURCE_FOOD, RESOURCE_STONE, BIOME_VOLCANO,
+    RESOURCE_FOOD,
+    RESOURCE_GOLD,
+    RESOURCE_IRON,
+    RESOURCE_STONE,
+    RESOURCE_WOOD,
+    SETTLEMENT_CAPITAL,
+    SETTLEMENT_CITY,
+    SETTLEMENT_NONE,
+    SETTLEMENT_TOWN,
+    SETTLEMENT_VILLAGE,
+    TerrainData,
 )
 
 
 class FeatureGenerator:
     """生成河流、聚落、道路、资源、航线等地图特性"""
 
-    def __init__(self, terrain_data: Dict[HexCoord, TerrainData],
-                 hex_coords_list: List[Tuple[HexCoord, float, float]]):
+    def __init__(
+        self,
+        terrain_data: Dict[HexCoord, TerrainData],
+        hex_coords_list: List[Tuple[HexCoord, float, float]],
+    ):
         self.terrain = terrain_data
         self.hex_coords_list = hex_coords_list
 
@@ -43,23 +55,26 @@ class FeatureGenerator:
                 if td.is_coast:
                     self.coast_hexes.append(hc)
 
-    def generate_rivers(self, rng: np.random.Generator,
-                        num_rivers: int = 12) -> List[List[HexCoord]]:
+    def generate_rivers(
+        self, rng: np.random.Generator, num_rivers: int = 12
+    ) -> List[List[HexCoord]]:
         """
         河流生成 — 从高地流向低地到海洋
         使用流水模拟：从随机高地起点开始，沿最陡下降方向流动
         """
         rivers = []
-        candidates = [h for h in self.land_hexes
-                      if self.terrain[h].elevation > 0.55
-                      and not self.terrain[h].volcanic]
+        candidates = [
+            h
+            for h in self.land_hexes
+            if self.terrain[h].elevation > 0.55 and not self.terrain[h].volcanic
+        ]
 
         if not candidates:
             return rivers
 
-        river_starts = rng.choice(len(candidates),
-                                  size=min(num_rivers, len(candidates)),
-                                  replace=False)
+        river_starts = rng.choice(
+            len(candidates), size=min(num_rivers, len(candidates)), replace=False
+        )
 
         for idx in river_starts:
             river = self._trace_river(candidates[idx], rng)
@@ -68,9 +83,7 @@ class FeatureGenerator:
                 # 标记河流流量
                 for i, hc in enumerate(river):
                     flow = 1.0 - (i / max(len(river), 1))
-                    self.terrain[hc].river_flow = max(
-                        self.terrain[hc].river_flow, flow
-                    )
+                    self.terrain[hc].river_flow = max(self.terrain[hc].river_flow, flow)
 
         return rivers
 
@@ -102,8 +115,9 @@ class FeatureGenerator:
 
             if best_neighbor is None:
                 # 随机选一个未访问的
-                unvisited = [nh for nh in current.neighbors()
-                             if nh in self.terrain and nh not in visited]
+                unvisited = [
+                    nh for nh in current.neighbors() if nh in self.terrain and nh not in visited
+                ]
                 if not unvisited:
                     break
                 best_neighbor = rng.choice(unvisited)
@@ -117,11 +131,14 @@ class FeatureGenerator:
 
         return path
 
-    def generate_settlements(self, rng: np.random.Generator,
-                             num_villages: int = 8,
-                             num_towns: int = 4,
-                             num_cities: int = 2,
-                             has_capital: bool = True) -> List[HexCoord]:
+    def generate_settlements(
+        self,
+        rng: np.random.Generator,
+        num_villages: int = 8,
+        num_towns: int = 4,
+        num_cities: int = 2,
+        has_capital: bool = True,
+    ) -> List[HexCoord]:
         """
         聚落生成 — 在地形合适的陆地上放置聚落
         偏好：平原 > 丘陵 > 森林 > 海岸
@@ -209,10 +226,16 @@ class FeatureGenerator:
 
         # 地形偏好
         biome_scores = {
-            "plains": 10, "grassland": 9, "savanna": 8,
-            "forest": 7, "dense_forest": 5,
-            "hills": 6, "taiga": 4,
-            "beach": 7, "desert": 2, "tundra": 1,
+            "plains": 10,
+            "grassland": 9,
+            "savanna": 8,
+            "forest": 7,
+            "dense_forest": 5,
+            "hills": 6,
+            "taiga": 4,
+            "beach": 7,
+            "desert": 2,
+            "tundra": 1,
         }
         score += biome_scores.get(td.biome, 0)
 
@@ -233,8 +256,9 @@ class FeatureGenerator:
     def generate_roads(self) -> List[Tuple[HexCoord, HexCoord]]:
         """道路生成 — 连接聚落之间的路径"""
         # 收集所有有聚落的六边形
-        settlements = [(hc, td) for hc, td in self.terrain.items()
-                       if td.settlement != SETTLEMENT_NONE]
+        settlements = [
+            (hc, td) for hc, td in self.terrain.items() if td.settlement != SETTLEMENT_NONE
+        ]
         settlements.sort(key=lambda x: -x[1].settlement_size)
 
         roads = []
@@ -269,8 +293,9 @@ class FeatureGenerator:
 
         return roads
 
-    def _find_road_path(self, start: HexCoord, end: HexCoord,
-                        max_steps: int = 100) -> List[HexCoord]:
+    def _find_road_path(
+        self, start: HexCoord, end: HexCoord, max_steps: int = 100
+    ) -> List[HexCoord]:
         """A* 寻路找到两个聚落之间的道路路径"""
         open_set = [(0, 0, start)]
         came_from: Dict[HexCoord, Optional[HexCoord]] = {start: None}
@@ -322,8 +347,7 @@ class FeatureGenerator:
 
         return []
 
-    def generate_resources(self, rng: np.random.Generator,
-                           density: float = 0.08) -> None:
+    def generate_resources(self, rng: np.random.Generator, density: float = 0.08) -> None:
         """在地图上分布资源"""
         resource_biomes = {
             RESOURCE_WOOD: ["forest", "dense_forest", "rainforest", "taiga"],
@@ -356,7 +380,8 @@ class FeatureGenerator:
     def generate_shipping_routes(self, rng: np.random.Generator) -> List[Tuple[HexCoord, HexCoord]]:
         """航线生成 — 连接沿海聚落"""
         coastal_settlements = [
-            hc for hc in self.coast_hexes
+            hc
+            for hc in self.coast_hexes
             if hc in self.terrain and self.terrain[hc].settlement != SETTLEMENT_NONE
         ]
 

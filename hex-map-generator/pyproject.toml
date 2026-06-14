@@ -1,0 +1,20 @@
+[project]
+name = "hex-map-generator"
+version = "0.1.0"
+description = "六边形地图生成器"
+requires-python = ">=3.10"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]  # pycodestyle, pyflakes, pycodestyle warnings, isort
+ignore = ["E501"]  # line-length 由 formatter 保证
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]  # test 文件允许 sys.path 插入后的 import
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

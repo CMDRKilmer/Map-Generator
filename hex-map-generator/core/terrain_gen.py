@@ -2,13 +2,14 @@
 地形与生物群落生成系统
 根据高程、湿度、温度数据为每个六边形分配地形和生物群落
 """
+
 from __future__ import annotations
-from typing import Dict, List, Optional, Tuple
+
+from typing import Dict, List, Optional
 
 import numpy as np
 
-from core.hex_grid import HexCoord, HEX_DIRECTIONS
-
+from core.hex_grid import HexCoord
 
 # 生物群落枚举
 BIOME_OCEAN = "ocean"
@@ -48,21 +49,21 @@ class TerrainData:
     """单个六边形的地形数据"""
 
     def __init__(self):
-        self.elevation: float = 0.0       # 0~1
-        self.moisture: float = 0.0        # 0~1
-        self.temperature: float = 0.5     # 0~1
+        self.elevation: float = 0.0  # 0~1
+        self.moisture: float = 0.0  # 0~1
+        self.temperature: float = 0.5  # 0~1
         self.biome: str = BIOME_OCEAN
         self.is_water: bool = True
         self.is_coast: bool = False
-        self.river_flow: float = 0.0      # 河流流量
+        self.river_flow: float = 0.0  # 河流流量
         self.resource: Optional[str] = None
         self.resource_amount: int = 0
         self.settlement: int = SETTLEMENT_NONE
         self.settlement_name: str = ""
-        self.settlement_size: int = 1      # 1-5等级
+        self.settlement_size: int = 1  # 1-5等级
         self.road: bool = False
-        self.shipping: bool = False        # 是否航线经过
-        self.volcanic: bool = False        # 是否火山
+        self.shipping: bool = False  # 是否航线经过
+        self.volcanic: bool = False  # 是否火山
 
     def __repr__(self):
         return f"Terrain({self.biome}, elev={self.elevation:.2f})"
@@ -83,8 +84,9 @@ class TerrainGenerator:
         # 基于 elevation(0~1) 和 moisture(0~1)
         self.biome_scheme = "whittaker"
 
-    def classify_biome(self, elevation: float, moisture: float,
-                       temperature: float, is_coast: bool) -> str:
+    def classify_biome(
+        self, elevation: float, moisture: float, temperature: float, is_coast: bool
+    ) -> str:
         """根据高程、湿度、温度分类生物群落"""
         # 深海
         if elevation < 0.15:
@@ -144,8 +146,13 @@ class TerrainGenerator:
             return BIOME_SWAMP
         return BIOME_FOREST
 
-    def generate(self, elevation: np.ndarray, moisture: np.ndarray,
-                 temperature: np.ndarray, hex_coords_list: List) -> Dict:
+    def generate(
+        self,
+        elevation: np.ndarray,
+        moisture: np.ndarray,
+        temperature: np.ndarray,
+        hex_coords_list: List,
+    ) -> Dict:
         """
         生成所有六边形的完整地形数据
 
@@ -159,8 +166,9 @@ class TerrainGenerator:
             {HexCoord: TerrainData}
         """
         terrain_data = {}
-        rng = np.random.Generator(np.random.PCG64(
-            int(np.sum(elevation[:min(100, len(elevation))] * 1000) % 10000) + 1))
+        rng = np.random.Generator(
+            np.random.PCG64(int(np.sum(elevation[: min(100, len(elevation))] * 1000) % 10000) + 1)
+        )
 
         # 构建快速查找
         coord_map = {}
@@ -199,8 +207,12 @@ class TerrainGenerator:
                             break
 
             # 火山（稀有）
-            if (not td.is_water and elevation[i] > 0.6
-                    and moisture[i] < 0.4 and rng.random() < self.volcano_chance):
+            if (
+                not td.is_water
+                and elevation[i] > 0.6
+                and moisture[i] < 0.4
+                and rng.random() < self.volcano_chance
+            ):
                 td.volcanic = True
                 td.biome = BIOME_VOLCANO
             else:

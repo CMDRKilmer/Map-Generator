@@ -1,13 +1,22 @@
 """
 地图生成参数调节面板
 """
+
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider,
-    QSpinBox, QComboBox, QPushButton, QGroupBox,
-    QCheckBox, QFormLayout,
+    QCheckBox,
+    QComboBox,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSlider,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
 )
 
 
@@ -63,9 +72,7 @@ class ParamPanel(QWidget):
         self.water_level.setValue(35)
         self.water_level.setToolTip("海平面高度 (15% ~ 60%)")
         self.water_label = QLabel("35%")
-        self.water_level.valueChanged.connect(
-            lambda v: self.water_label.setText(f"{v}%")
-        )
+        self.water_level.valueChanged.connect(lambda v: self.water_label.setText(f"{v}%"))
         wl_layout = QHBoxLayout()
         wl_layout.addWidget(self.water_level)
         wl_layout.addWidget(self.water_label)
@@ -77,9 +84,7 @@ class ParamPanel(QWidget):
         self.noise_scale.setValue(30)
         self.noise_scale.setToolTip("地形起伏频率 (10=粗糙, 80=平滑)")
         self.scale_label = QLabel("3.0")
-        self.noise_scale.valueChanged.connect(
-            lambda v: self.scale_label.setText(f"{v/10:.1f}")
-        )
+        self.noise_scale.valueChanged.connect(lambda v: self.scale_label.setText(f"{v / 10:.1f}"))
         scale_layout = QHBoxLayout()
         scale_layout.addWidget(self.noise_scale)
         scale_layout.addWidget(self.scale_label)
@@ -87,7 +92,9 @@ class ParamPanel(QWidget):
 
         # 季风方向
         self.monsoon_combo = QComboBox()
-        self.monsoon_combo.addItems(["无季风", "北风", "东北风", "东风", "东南风", "南风", "西南风", "西风", "西北风"])
+        self.monsoon_combo.addItems(
+            ["无季风", "北风", "东北风", "东风", "东南风", "南风", "西南风", "西风", "西北风"]
+        )
         self.monsoon_combo.setCurrentIndex(3)
         gen_layout.addRow("季风方向:", self.monsoon_combo)
 
@@ -102,9 +109,7 @@ class ParamPanel(QWidget):
         self.resource_density.setRange(2, 20)
         self.resource_density.setValue(8)
         self.resource_label = QLabel("8%")
-        self.resource_density.valueChanged.connect(
-            lambda v: self.resource_label.setText(f"{v}%")
-        )
+        self.resource_density.valueChanged.connect(lambda v: self.resource_label.setText(f"{v}%"))
         rd_layout = QHBoxLayout()
         rd_layout.addWidget(self.resource_density)
         rd_layout.addWidget(self.resource_label)
@@ -169,10 +174,20 @@ class ParamPanel(QWidget):
         edit_layout.addWidget(self.edit_tool_combo)
 
         self.terrain_combo = QComboBox()
-        self.terrain_combo.addItems([
-            "平原", "森林", "密林", "雨林", "针叶林",
-            "丘陵", "山地", "沙漠", "稀树草原", "冻土",
-        ])
+        self.terrain_combo.addItems(
+            [
+                "平原",
+                "森林",
+                "密林",
+                "雨林",
+                "针叶林",
+                "丘陵",
+                "山地",
+                "沙漠",
+                "稀树草原",
+                "冻土",
+            ]
+        )
         self.terrain_combo.setCurrentIndex(0)
         self.terrain_combo.setEnabled(False)
         self.terrain_combo.currentIndexChanged.connect(self._on_terrain_change)
@@ -205,6 +220,7 @@ class ParamPanel(QWidget):
 
     def _random_seed(self):
         import random
+
         self.seed_input.setValue(random.randint(0, 999999))
 
     def _on_layer_change(self, idx: int):
@@ -224,10 +240,16 @@ class ParamPanel(QWidget):
         self.terrain_combo.setEnabled(idx == 0)
 
     TERRAIN_MAP = {
-        "平原": "plains", "森林": "forest", "密林": "dense_forest",
-        "雨林": "rainforest", "针叶林": "taiga",
-        "丘陵": "hills", "山地": "mountains",
-        "沙漠": "desert", "稀树草原": "savanna", "冻土": "tundra",
+        "平原": "plains",
+        "森林": "forest",
+        "密林": "dense_forest",
+        "雨林": "rainforest",
+        "针叶林": "taiga",
+        "丘陵": "hills",
+        "山地": "mountains",
+        "沙漠": "desert",
+        "稀树草原": "savanna",
+        "冻土": "tundra",
     }
 
     def _on_terrain_change(self, idx: int):
@@ -240,8 +262,15 @@ class ParamPanel(QWidget):
         size_idx = self.size_input.currentIndex()
         sizes = [20, 40, 60, 80]
         monsoon_map = {
-            0: None, 1: 0, 2: 45, 3: 90, 4: 135,
-            5: 180, 6: 225, 7: 270, 8: 315,
+            0: None,
+            1: 0,
+            2: 45,
+            3: 90,
+            4: 135,
+            5: 180,
+            6: 225,
+            7: 270,
+            8: 315,
         }
         return {
             "seed": self.seed_input.value(),
