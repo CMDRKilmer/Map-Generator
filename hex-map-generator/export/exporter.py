@@ -1,20 +1,32 @@
 """
 导出功能 — PNG / SVG / JSON 格式导出
 """
-from __future__ import annotations
-import json
-from typing import Dict, List, Optional, Set, Tuple
 
+from __future__ import annotations
+
+import json
+from typing import Dict, Set, Tuple
+
+from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import (
-    QPainter, QColor, QImage, QPen, QBrush, QFont, QFontMetrics, QPainterPath,
+    QBrush,
+    QColor,
+    QFont,
+    QFontMetrics,
+    QImage,
+    QPainter,
+    QPainterPath,
+    QPen,
 )
-from PySide6.QtCore import Qt, QPointF
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 from core.hex_grid import HexCoord
 from core.terrain_gen import (
-    TerrainData, SETTLEMENT_NONE, SETTLEMENT_VILLAGE,
-    SETTLEMENT_TOWN, SETTLEMENT_CITY, SETTLEMENT_CAPITAL,
+    SETTLEMENT_CAPITAL,
+    SETTLEMENT_CITY,
+    SETTLEMENT_NONE,
+    SETTLEMENT_TOWN,
+    TerrainData,
 )
 from utils.colors import BIOME_COLORS, FEATURE_COLORS
 
@@ -40,8 +52,8 @@ class MapExporter:
 
         margin = 20
         hex_size = self.widget.hex_size
-        min_x = min_y = float('inf')
-        max_x = max_y = float('-inf')
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
 
         for hc in self.widget.hex_grid.hexes:
             cx, cy = self.widget.hex_grid.hex_center(hc, hex_size)
@@ -96,8 +108,8 @@ class MapExporter:
                 return
 
         hex_size = self.widget.hex_size
-        min_x = min_y = float('inf')
-        max_x = max_y = float('-inf')
+        min_x = min_y = float("inf")
+        max_x = max_y = float("-inf")
 
         for hc in self.widget.hex_grid.hexes:
             cx, cy = self.widget.hex_grid.hex_center(hc, hex_size)
@@ -121,17 +133,14 @@ class MapExporter:
                 continue
             corners = self.widget.hex_grid.hex_corners(hc, hex_size)
             color = BIOME_COLORS.get(td.biome, QColor(100, 100, 100))
-            pts = " ".join(
-                f"{x - min_x + 20},{y - min_y + 20}" for x, y in corners
-            )
+            pts = " ".join(f"{x - min_x + 20},{y - min_y + 20}" for x, y in corners)
             svg_lines.append(
-                f'<polygon points="{pts}" fill="{color.name()}" '
-                f'stroke="#444" stroke-width="0.5"/>'
+                f'<polygon points="{pts}" fill="{color.name()}" stroke="#444" stroke-width="0.5"/>'
             )
 
-        svg_lines.append('</svg>')
+        svg_lines.append("</svg>")
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write("\n".join(svg_lines))
 
         QMessageBox.information(parent_widget, "完成", f"SVG已导出到:\n{filepath}")
@@ -144,8 +153,7 @@ class MapExporter:
 
         if not filepath:
             filepath, _ = QFileDialog.getSaveFileName(
-                parent_widget, "导出 JSON", "map_data.json",
-                "JSON Files (*.json)"
+                parent_widget, "导出 JSON", "map_data.json", "JSON Files (*.json)"
             )
             if not filepath:
                 return
@@ -169,35 +177,36 @@ class MapExporter:
             if td.settlement != SETTLEMENT_NONE:
                 settlement_name = td.settlement_name
 
-            data["hexes"].append({
-                "q": hc.q,
-                "r": hc.r,
-                "x": round(cx, 1),
-                "y": round(cy, 1),
-                "elevation": round(td.elevation, 3),
-                "moisture": round(td.moisture, 3),
-                "temperature": round(td.temperature, 3),
-                "biome": td.biome,
-                "is_water": td.is_water,
-                "river_flow": round(td.river_flow, 3),
-                "settlement": td.settlement,
-                "settlement_name": settlement_name,
-                "resource": td.resource or "",
-                "resource_amount": td.resource_amount,
-                "road": td.road,
-                "shipping": td.shipping,
-                "volcanic": td.volcanic,
-            })
+            data["hexes"].append(
+                {
+                    "q": hc.q,
+                    "r": hc.r,
+                    "x": round(cx, 1),
+                    "y": round(cy, 1),
+                    "elevation": round(td.elevation, 3),
+                    "moisture": round(td.moisture, 3),
+                    "temperature": round(td.temperature, 3),
+                    "biome": td.biome,
+                    "is_water": td.is_water,
+                    "river_flow": round(td.river_flow, 3),
+                    "settlement": td.settlement,
+                    "settlement_name": settlement_name,
+                    "resource": td.resource or "",
+                    "resource_amount": td.resource_amount,
+                    "road": td.road,
+                    "shipping": td.shipping,
+                    "volcanic": td.volcanic,
+                }
+            )
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
         QMessageBox.information(parent_widget, "完成", f"JSON数据已导出到:\n{filepath}")
 
     # ─── 绘制方法 ─────────────────────────────────────────────
 
-    def _draw_hex(self, painter: QPainter, hc: HexCoord,
-                  td: TerrainData, hex_size: float):
+    def _draw_hex(self, painter: QPainter, hc: HexCoord, td: TerrainData, hex_size: float):
         """在 Painter 上绘制单个六边形"""
         corners = self.widget.hex_grid.hex_corners(hc, hex_size)
         path = QPainterPath()
@@ -211,8 +220,7 @@ class MapExporter:
         painter.setPen(QPen(QColor(60, 60, 70), 0.5))
         painter.drawPath(path)
 
-    def _draw_rivers(self, painter: QPainter,
-                     terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_rivers(self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float):
         painter.setPen(QPen(FEATURE_COLORS.get("river", QColor(70, 140, 230)), 2.0))
         for hc, td in terrain_data.items():
             if td.river_flow > 0.3:
@@ -229,8 +237,7 @@ class MapExporter:
                     nx, ny = hex_grid.hex_center(best_nh, hex_size)
                     painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
 
-    def _draw_roads(self, painter: QPainter,
-                    terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_roads(self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float):
         painter.setPen(QPen(FEATURE_COLORS.get("road", QColor(160, 120, 80)), 1.5))
         # 用无向边集合保证对称画线且不重复
         drawn_edges: Set[Tuple[int, int]] = set()
@@ -252,8 +259,7 @@ class MapExporter:
                 nx, ny = hex_grid.hex_center(nh, hex_size)
                 painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
 
-    def _draw_settlements(self, painter: QPainter,
-                          terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_settlements(self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float):
         for hc, td in terrain_data.items():
             if td.settlement == SETTLEMENT_NONE:
                 continue
@@ -294,11 +300,13 @@ class MapExporter:
                     star,
                 )
 
-    def _draw_resources(self, painter: QPainter,
-                        terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_resources(self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float):
         text_symbols = {
-            "wood": "W", "iron": "I", "gold": "G",
-            "food": "F", "stone": "S",
+            "wood": "W",
+            "iron": "I",
+            "gold": "G",
+            "food": "F",
+            "stone": "S",
         }
         font = QFont("sans-serif", max(7, int(hex_size * 0.4)), QFont.Bold)
         painter.setFont(font)
@@ -318,13 +326,17 @@ class MapExporter:
                 sym,
             )
 
-    def _draw_shipping_routes(self, painter: QPainter,
-                              terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_shipping_routes(
+        self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float
+    ):
         # QPen 移到循环外避免重复构造
-        painter.setPen(QPen(
-            FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
-            1.0, Qt.DashLine,
-        ))
+        painter.setPen(
+            QPen(
+                FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
+                1.0,
+                Qt.DashLine,
+            )
+        )
         drawn_edges: Set[Tuple[int, int]] = set()
         for hc, td in terrain_data.items():
             if not td.shipping:
@@ -344,8 +356,7 @@ class MapExporter:
                 nx, ny = hex_grid.hex_center(nh, hex_size)
                 painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
 
-    def _draw_labels(self, painter: QPainter,
-                     terrain_data: Dict, hex_grid, hex_size: float):
+    def _draw_labels(self, painter: QPainter, terrain_data: Dict, hex_grid, hex_size: float):
         font = QFont("sans-serif", max(7, int(hex_size * 0.45)))
         painter.setFont(font)
         fm = QFontMetrics(font)

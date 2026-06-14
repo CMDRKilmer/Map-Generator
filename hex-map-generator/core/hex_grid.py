@@ -1,7 +1,9 @@
 """
 六边形网格核心库 — 平顶(flat-top)六边形，轴向坐标 (q, r)
 """
+
 from __future__ import annotations
+
 import math
 from typing import List, Tuple
 
@@ -70,8 +72,12 @@ class HexCoord:
 
 # 平顶六边形的6个方向 (轴向坐标)
 HEX_DIRECTIONS = [
-    HexCoord(1, 0), HexCoord(1, -1), HexCoord(0, -1),
-    HexCoord(-1, 0), HexCoord(-1, 1), HexCoord(0, 1),
+    HexCoord(1, 0),
+    HexCoord(1, -1),
+    HexCoord(0, -1),
+    HexCoord(-1, 0),
+    HexCoord(-1, 1),
+    HexCoord(0, 1),
 ]
 
 
@@ -138,10 +144,12 @@ class HexGrid:
         for i in range(6):
             angle_deg = 60.0 * i
             angle_rad = math.radians(angle_deg)
-            corners.append((
-                cx + hex_size * math.cos(angle_rad),
-                cy + hex_size * math.sin(angle_rad),
-            ))
+            corners.append(
+                (
+                    cx + hex_size * math.cos(angle_rad),
+                    cy + hex_size * math.sin(angle_rad),
+                )
+            )
         return corners
 
     def all_hex_centers(self, hex_size: float) -> List[Tuple[HexCoord, float, float]]:

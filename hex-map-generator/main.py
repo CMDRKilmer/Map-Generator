@@ -1,26 +1,31 @@
 """
 主窗口 — 整合地图生成器所有组件
 """
+
 from __future__ import annotations
+
 import sys
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QSplitter,
-    QStatusBar, QLabel, QMessageBox,
+    QApplication,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QSplitter,
+    QStatusBar,
 )
 
-import numpy as np
-
+from core.feature_gen import FeatureGenerator
 from core.hex_grid import HexCoord, HexGrid
 from core.noise_gen import NoiseGenerator
-from core.terrain_gen import TerrainGenerator, TerrainData
-from core.feature_gen import FeatureGenerator
+from core.terrain_gen import TerrainData, TerrainGenerator
+from export.exporter import MapExporter
 from ui.map_widget import MapWidget
 from ui.param_panel import ParamPanel
-from export.exporter import MapExporter
 
 
 class MainWindow(QMainWindow):
@@ -125,25 +130,25 @@ class MainWindow(QMainWindow):
         # 显示选项 -> 地图
         panel = self.param_panel
         panel.show_grid_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_grid', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_grid", v) or self.map_widget.update()
         )
         panel.show_rivers_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_rivers', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_rivers", v) or self.map_widget.update()
         )
         panel.show_roads_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_roads', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_roads", v) or self.map_widget.update()
         )
         panel.show_settlements_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_settlements', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_settlements", v) or self.map_widget.update()
         )
         panel.show_resources_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_resources', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_resources", v) or self.map_widget.update()
         )
         panel.show_shipping_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_shipping', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_shipping", v) or self.map_widget.update()
         )
         panel.show_labels_cb.toggled.connect(
-            lambda v: setattr(self.map_widget, 'show_labels', v) or self.map_widget.update()
+            lambda v: setattr(self.map_widget, "show_labels", v) or self.map_widget.update()
         )
 
         # 图层切换
@@ -155,18 +160,15 @@ class MainWindow(QMainWindow):
         # 编辑工具
         panel.edit_tool_combo.currentIndexChanged.connect(
             lambda: self.map_widget.set_edit_tool(
-                ["terrain", "settlement", "resource", "erase"][
-                    panel.edit_tool_combo.currentIndex()
-                ]
+                ["terrain", "settlement", "resource", "erase"][panel.edit_tool_combo.currentIndex()]
             )
         )
-        panel.terrain_changed.connect(
-            lambda v: setattr(self.map_widget, 'edit_terrain', v)
-        )
+        panel.terrain_changed.connect(lambda v: setattr(self.map_widget, "edit_terrain", v))
         panel.settlement_type_combo.currentIndexChanged.connect(
             lambda: setattr(
-                self.map_widget, 'edit_settlement_type',
-                [1, 2, 3, 4][panel.settlement_type_combo.currentIndex()]
+                self.map_widget,
+                "edit_settlement_type",
+                [1, 2, 3, 4][panel.settlement_type_combo.currentIndex()],
             )
         )
 
@@ -207,25 +209,18 @@ class MainWindow(QMainWindow):
 
         # 3. 生成噪声数据
         noise_gen = NoiseGenerator(seed=seed)
-        self.elevation = noise_gen.generate_elevation(
-            coords_xy, scale=noise_scale
-        )
+        self.elevation = noise_gen.generate_elevation(coords_xy, scale=noise_scale)
         monsoon_angle = monsoon_dir if monsoon_dir is not None else 90.0
         self.moisture = noise_gen.generate_moisture(
-            coords_xy, self.elevation,
-            scale=noise_scale * 1.2,
-            monsoon_dir=monsoon_angle
+            coords_xy, self.elevation, scale=noise_scale * 1.2, monsoon_dir=monsoon_angle
         )
-        self.temperature = noise_gen.generate_temperature(
-            self.elevation, coords_xy
-        )
+        self.temperature = noise_gen.generate_temperature(self.elevation, coords_xy)
 
         # 4. 生成地形数据
         terrain_gen = TerrainGenerator()
         terrain_gen.water_level = water_level
         self.terrain_data = terrain_gen.generate(
-            self.elevation, self.moisture, self.temperature,
-            self.hex_coords_list
+            self.elevation, self.moisture, self.temperature, self.hex_coords_list
         )
 
         # 5. 生成特性
@@ -252,8 +247,11 @@ class MainWindow(QMainWindow):
         # 6. 将数据传给地图组件
         self.map_widget.set_hex_size(hex_size)
         self.map_widget.set_map_data(
-            self.hex_grid, self.terrain_data,
-            self.elevation, self.moisture, self.temperature,
+            self.hex_grid,
+            self.terrain_data,
+            self.elevation,
+            self.moisture,
+            self.temperature,
             self.coord_to_idx,
         )
 
@@ -286,7 +284,8 @@ class MainWindow(QMainWindow):
 
     def _show_about(self):
         QMessageBox.about(
-            self, "关于 六边形地图生成器",
+            self,
+            "关于 六边形地图生成器",
             "六边形策略游戏地图生成器 v1.0\n\n"
             "功能:\n"
             "• 六边形策略地图生成\n"
@@ -295,7 +294,7 @@ class MainWindow(QMainWindow):
             "• 季风与航线模拟\n"
             "• 多层数据展示\n"
             "• 手动编辑模式\n"
-            "• 导出 PNG/SVG/JSON"
+            "• 导出 PNG/SVG/JSON",
         )
 
 
