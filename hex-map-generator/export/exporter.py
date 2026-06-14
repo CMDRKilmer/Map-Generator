@@ -3,7 +3,7 @@
 """
 from __future__ import annotations
 import json
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from PySide6.QtGui import (
     QPainter, QColor, QImage, QPen, QBrush, QFont, QFontMetrics, QPainterPath,
@@ -232,18 +232,25 @@ class MapExporter:
     def _draw_roads(self, painter: QPainter,
                     terrain_data: Dict, hex_grid, hex_size: float):
         painter.setPen(QPen(FEATURE_COLORS.get("road", QColor(160, 120, 80)), 1.5))
-        visited = set()
+        # 用无向边集合保证对称画线且不重复
+        drawn_edges: Set[Tuple[int, int]] = set()
         for hc, td in terrain_data.items():
             if not td.road:
                 continue
             cx, cy = hex_grid.hex_center(hc, hex_size)
             for nh in hc.neighbors():
-                if nh in visited:
+                if nh not in terrain_data or not terrain_data[nh].road:
                     continue
-                if nh in terrain_data and terrain_data[nh].road:
-                    nx, ny = hex_grid.hex_center(nh, hex_size)
-                    painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
-            visited.add(hc)
+                edge = (
+                    hc.q * 100000 + hc.r,
+                    nh.q * 100000 + nh.r,
+                )
+                key = (min(edge), max(edge))
+                if key in drawn_edges:
+                    continue
+                drawn_edges.add(key)
+                nx, ny = hex_grid.hex_center(nh, hex_size)
+                painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
 
     def _draw_settlements(self, painter: QPainter,
                           terrain_data: Dict, hex_grid, hex_size: float):
@@ -274,10 +281,18 @@ class MapExporter:
             painter.drawEllipse(QPointF(cx, cy), radius, radius)
 
             if td.settlement in (SETTLEMENT_CAPITAL, SETTLEMENT_CITY):
-                painter.setPen(QPen(Qt.white, 1.0))
                 font = QFont("sans-serif", max(8, int(hex_size * 0.5)))
                 painter.setFont(font)
-                painter.drawText(QPointF(cx - radius * 0.3, cy + radius * 0.4), "★")
+                fm = QFontMetrics(font)
+                star = "★"
+                tw = fm.horizontalAdvance(star)
+                th = fm.ascent()
+                # 度量居中而非硬编码偏移
+                painter.setPen(QPen(Qt.white, 1.0))
+                painter.drawText(
+                    QPointF(cx - tw / 2, cy + th / 2 - fm.descent() / 2),
+                    star,
+                )
 
     def _draw_resources(self, painter: QPainter,
                         terrain_data: Dict, hex_grid, hex_size: float):
@@ -285,6 +300,9 @@ class MapExporter:
             "wood": "W", "iron": "I", "gold": "G",
             "food": "F", "stone": "S",
         }
+        font = QFont("sans-serif", max(7, int(hex_size * 0.4)), QFont.Bold)
+        painter.setFont(font)
+        fm = QFontMetrics(font)
         for hc, td in terrain_data.items():
             if not td.resource:
                 continue
@@ -292,34 +310,54 @@ class MapExporter:
             sym = text_symbols.get(td.resource, "?")
             color = FEATURE_COLORS.get(f"resource_{td.resource}", QColor(200, 200, 200))
             painter.setPen(QPen(color, 1.0))
-            font = QFont("sans-serif", max(7, int(hex_size * 0.4)), QFont.Bold)
-            painter.setFont(font)
-            painter.drawText(QPointF(cx - 4, cy + 3), sym)
+            tw = fm.horizontalAdvance(sym)
+            th = fm.ascent()
+            # 用 QFontMetrics 居中而非硬编码 -4, +3
+            painter.drawText(
+                QPointF(cx - tw / 2, cy + th / 2 - fm.descent() / 2),
+                sym,
+            )
 
     def _draw_shipping_routes(self, painter: QPainter,
                               terrain_data: Dict, hex_grid, hex_size: float):
+        # QPen 移到循环外避免重复构造
+        painter.setPen(QPen(
+            FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
+            1.0, Qt.DashLine,
+        ))
+        drawn_edges: Set[Tuple[int, int]] = set()
         for hc, td in terrain_data.items():
             if not td.shipping:
                 continue
             cx, cy = hex_grid.hex_center(hc, hex_size)
-            painter.setPen(QPen(FEATURE_COLORS.get("shipping_route", QColor(40, 80, 180)),
-                                1.0, Qt.DashLine))
             for nh in hc.neighbors():
-                if nh in terrain_data and terrain_data[nh].shipping:
-                    nx, ny = hex_grid.hex_center(nh, hex_size)
-                    painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
-                    break
+                if nh not in terrain_data or not terrain_data[nh].shipping:
+                    continue
+                edge = (
+                    hc.q * 100000 + hc.r,
+                    nh.q * 100000 + nh.r,
+                )
+                key = (min(edge), max(edge))
+                if key in drawn_edges:
+                    continue
+                drawn_edges.add(key)
+                nx, ny = hex_grid.hex_center(nh, hex_size)
+                painter.drawLine(QPointF(cx, cy), QPointF(nx, ny))
 
     def _draw_labels(self, painter: QPainter,
                      terrain_data: Dict, hex_grid, hex_size: float):
+        font = QFont("sans-serif", max(7, int(hex_size * 0.45)))
+        painter.setFont(font)
+        fm = QFontMetrics(font)
+        # 名称过长时按字符截断，避免与邻接标签重叠
+        max_chars = 6
         for hc, td in terrain_data.items():
             if td.settlement == SETTLEMENT_NONE or not td.settlement_name:
                 continue
             cx, cy = hex_grid.hex_center(hc, hex_size)
-            painter.setPen(QPen(QColor(255, 255, 255, 200), 1.0))
-            font = QFont("sans-serif", max(7, int(hex_size * 0.45)))
-            painter.setFont(font)
-            fm = QFontMetrics(font)
             text = td.settlement_name
+            if len(text) > max_chars:
+                text = text[:max_chars] + "…"
             tw = fm.horizontalAdvance(text)
+            painter.setPen(QPen(QColor(255, 255, 255, 200), 1.0))
             painter.drawText(QPointF(cx - tw / 2, cy + hex_size * 0.7), text)
