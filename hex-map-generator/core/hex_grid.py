@@ -3,7 +3,7 @@
 """
 from __future__ import annotations
 import math
-from typing import List, Tuple, Optional, Set
+from typing import List, Tuple
 
 import numpy as np
 
@@ -63,6 +63,8 @@ class HexCoord:
 
     @staticmethod
     def from_cube(q: int, r: int, s: int) -> HexCoord:
+        if q + r + s != 0:
+            raise ValueError(f"Invalid cube coordinates: ({q}, {r}, {s}) does not sum to 0")
         return HexCoord(q, r)
 
 

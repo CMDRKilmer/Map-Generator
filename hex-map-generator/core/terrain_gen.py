@@ -7,6 +7,8 @@ from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
+from core.hex_grid import HexCoord, HEX_DIRECTIONS
+
 
 # 生物群落枚举
 BIOME_OCEAN = "ocean"
@@ -26,14 +28,6 @@ BIOME_MOUNTAINS = "mountains"
 BIOME_HIGH_MOUNTAINS = "high_mountains"
 BIOME_SWAMP = "swamp"
 BIOME_VOLCANO = "volcano"
-
-# 地形类型
-TERRAIN_WATER = "water"
-TERRAIN_LAND = "land"
-TERRAIN_MOUNTAIN = "mountain"
-TERRAIN_DESERT = "desert"
-TERRAIN_SNOW = "snow"
-TERRAIN_VOLCANO = "volcano"
 
 # 资源类型
 RESOURCE_WOOD = "wood"
@@ -165,12 +159,8 @@ class TerrainGenerator:
             {HexCoord: TerrainData}
         """
         terrain_data = {}
-        n = len(elevation)
         rng = np.random.Generator(np.random.PCG64(
-            int(np.sum(elevation[:100] * 1000) % 10000)))
-
-        # 先判断海岸线
-        from core.hex_grid import HexCoord, HEX_DIRECTIONS
+            int(np.sum(elevation[:min(100, len(elevation))] * 1000) % 10000) + 1))
 
         # 构建快速查找
         coord_map = {}
@@ -221,7 +211,3 @@ class TerrainGenerator:
             terrain_data[hc] = td
 
         return terrain_data
-
-    def get_biome_color_key(self, biome: str) -> str:
-        """将生物群落名映射到配色键名"""
-        return biome

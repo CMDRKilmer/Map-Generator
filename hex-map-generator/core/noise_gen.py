@@ -1,17 +1,17 @@
 """
-噪声生成器 — 使用简单高效的噪声算法生成高程、湿度、温度等地图数据
+噪声生成器 — 使用 Perlin 噪声算法生成高程、湿度、温度等地图数据
 """
 from __future__ import annotations
-from typing import Dict, List, Tuple, Optional
+from typing import List, Tuple
 import math
 
 import numpy as np
 
 
-class SimplexNoise:
+class PerlinNoise:
     """
-    简易 Simplex-like 噪声实现
-    不需要额外依赖，用 n 个八度的 Perlin 噪声叠加
+    简易 Perlin 噪声实现（梯度噪声）
+    不需要额外依赖，用 n 个八度的噪声叠加
     """
 
     def __init__(self, seed: int = 42):
@@ -103,15 +103,14 @@ class NoiseGenerator:
 
     def __init__(self, seed: int = 42):
         self.seed = seed
-        self.simplex = SimplexNoise(seed)
+        self.perlin = PerlinNoise(seed)
 
     def set_seed(self, seed: int):
         self.seed = seed
-        self.simplex = SimplexNoise(seed)
+        self.perlin = PerlinNoise(seed)
 
     def generate_elevation(self, hex_coords: List[Tuple[float, float]],
-                           scale: float = 3.0, octaves: int = 6,
-                           water_level: float = 0.35) -> np.ndarray:
+                           scale: float = 3.0, octaves: int = 6) -> np.ndarray:
         """
         生成高程数据
 
@@ -119,7 +118,6 @@ class NoiseGenerator:
             hex_coords: [(x, y), ...] 六边形坐标列表
             scale: 噪声缩放
             octaves: 八度数
-            water_level: 海平面比例 (0~1)
 
         Returns:
             elevation: (N,) 0~1 的高程值
@@ -128,7 +126,7 @@ class NoiseGenerator:
         elevation = np.zeros(n)
 
         for i, (x, y) in enumerate(hex_coords):
-            val = self.simplex.octave_noise(
+            val = self.perlin.octave_noise(
                 x, y, octaves=octaves, scale=scale
             )
             # 映射到 0~1
@@ -142,7 +140,7 @@ class NoiseGenerator:
         return elevation
 
     def generate_moisture(self, hex_coords: List[Tuple[float, float]],
-                          elevation: np.ndarray, water_level: float,
+                          elevation: np.ndarray,
                           scale: float = 4.0, octaves: int = 4,
                           monsoon_dir: float = 90.0) -> np.ndarray:
         """
@@ -161,7 +159,7 @@ class NoiseGenerator:
         monsoon_dy = -math.cos(monsoon_rad)
 
         for i, (x, y) in enumerate(hex_coords):
-            val = self.simplex.octave_noise(
+            val = self.perlin.octave_noise(
                 x, y, octaves=octaves, scale=scale
             )
             m = (val + 1.0) * 0.5
@@ -184,8 +182,7 @@ class NoiseGenerator:
         return moisture
 
     def generate_temperature(self, elevation: np.ndarray,
-                             hex_coords: List[Tuple[float, float]],
-                             latitude_bias: float = 0.0) -> np.ndarray:
+                             hex_coords: List[Tuple[float, float]]) -> np.ndarray:
         """
         生成温度数据
         受纬度（y坐标）和高程影响
@@ -200,7 +197,7 @@ class NoiseGenerator:
         for i, (x, y) in enumerate(hex_coords):
             # 纬度效应：y越大越冷
             lat_factor = (y - y_min) / (y_max - y_min + 0.001)
-            temp = 1.0 - lat_factor + latitude_bias
+            temp = 1.0 - lat_factor
 
             # 高程效应：每升高0.1降温
             temp -= elevation[i] * 0.3
