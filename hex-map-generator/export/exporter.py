@@ -54,13 +54,15 @@ class MapExporter:
         hex_size = self.widget.hex_size
         min_x = min_y = float("inf")
         max_x = max_y = float("-inf")
+        hex_width = hex_size * 1.5
+        hex_height = hex_size * math.sqrt(3) / 2
 
         for hc in self.widget.hex_grid.hexes:
             cx, cy = self.widget.hex_grid.hex_center(hc, hex_size)
-            min_x = min(min_x, cx - hex_size)
-            max_x = max(max_x, cx + hex_size)
-            min_y = min(min_y, cy - hex_size)
-            max_y = max(max_y, cy + hex_size)
+            min_x = min(min_x, cx - hex_width)
+            max_x = max(max_x, cx + hex_width)
+            min_y = min(min_y, cy - hex_height)
+            max_y = max(max_y, cy + hex_height)
 
         width = int(max_x - min_x + margin * 2)
         height = int(max_y - min_y + margin * 2)
@@ -110,13 +112,15 @@ class MapExporter:
         hex_size = self.widget.hex_size
         min_x = min_y = float("inf")
         max_x = max_y = float("-inf")
+        hex_width = hex_size * 1.5
+        hex_height = hex_size * math.sqrt(3) / 2
 
         for hc in self.widget.hex_grid.hexes:
             cx, cy = self.widget.hex_grid.hex_center(hc, hex_size)
-            min_x = min(min_x, cx - hex_size)
-            max_x = max(max_x, cx + hex_size)
-            min_y = min(min_y, cy - hex_size)
-            max_y = max(max_y, cy + hex_size)
+            min_x = min(min_x, cx - hex_width)
+            max_x = max(max_x, cx + hex_width)
+            min_y = min(min_y, cy - hex_height)
+            max_y = max(max_y, cy + hex_height)
 
         w = max_x - min_x + 40
         h = max_y - min_y + 40

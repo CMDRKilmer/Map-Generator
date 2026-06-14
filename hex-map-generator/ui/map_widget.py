@@ -168,8 +168,8 @@ class MapWidget(QWidget):
 
             # 快速可见性测试
             cx, cy = self.hex_grid.hex_center(hc, self.hex_size)
-            dx = cx - (self.width() / 2 - vis_center_x)
-            dy = cy - (self.height() / 2 - vis_center_y)
+            dx = cx - vis_center_x
+            dy = cy - vis_center_y
             if dx * dx + dy * dy > vis_radius * vis_radius:
                 # 粗略跳过 — 只对大地图有效
                 if self.hex_grid.size > 30:
