@@ -10,6 +10,7 @@ FEATURE_COLORS = {
     "village": QColor(220, 140, 60),       # 村庄 (橙色)
     "capital": QColor(220, 180, 40),       # 首都 (金色)
     "road": QColor(160, 120, 80),          # 道路 (棕色)
+    "river": QColor(70, 140, 230),         # 河流 (蓝色)
     "shipping_route": QColor(40, 80, 180), # 航线 (蓝色)
     "resource_wood": QColor(40, 130, 40),   # 木材
     "resource_iron": QColor(140, 130, 140), # 铁矿
