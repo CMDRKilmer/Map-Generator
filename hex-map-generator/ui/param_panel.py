@@ -6,22 +6,22 @@ from __future__ import annotations
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSlider,
-    QSpinBox, QComboBox, QPushButton, QGroupBox, QGridLayout,
-    QCheckBox, QLineEdit, QFormLayout,
+    QSpinBox, QComboBox, QPushButton, QGroupBox,
+    QCheckBox, QFormLayout,
 )
 
 
 class ParamPanel(QWidget):
     """参数控制面板"""
 
-    # 信号：参数变更
-    params_changed = Signal(dict)
     # 信号：生成地图
     generate_clicked = Signal()
     # 信号：编辑模式切换
     edit_mode_toggled = Signal(bool)
     # 信号：图层切换
     layer_changed = Signal(str)
+    # 信号：地形画笔类型切换
+    terrain_changed = Signal(str)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -168,6 +168,17 @@ class ParamPanel(QWidget):
         edit_layout.addWidget(QLabel("编辑工具:"))
         edit_layout.addWidget(self.edit_tool_combo)
 
+        self.terrain_combo = QComboBox()
+        self.terrain_combo.addItems([
+            "平原", "森林", "密林", "雨林", "针叶林",
+            "丘陵", "山地", "沙漠", "稀树草原", "冻土",
+        ])
+        self.terrain_combo.setCurrentIndex(0)
+        self.terrain_combo.setEnabled(False)
+        self.terrain_combo.currentIndexChanged.connect(self._on_terrain_change)
+        edit_layout.addWidget(QLabel("地形类型:"))
+        edit_layout.addWidget(self.terrain_combo)
+
         self.settlement_type_combo = QComboBox()
         self.settlement_type_combo.addItems(["村庄", "城镇", "城市", "首都"])
         self.settlement_type_combo.setCurrentIndex(1)
@@ -192,17 +203,6 @@ class ParamPanel(QWidget):
         # 弹性空间
         layout.addStretch()
 
-        # 连接信号
-        for widget in [self.seed_input, self.size_input, self.water_level,
-                       self.noise_scale, self.monsoon_combo, self.river_count,
-                       self.resource_density]:
-            if hasattr(widget, 'valueChanged'):
-                widget.valueChanged.connect(self._emit_params)
-            elif hasattr(widget, 'currentIndexChanged'):
-                widget.currentIndexChanged.connect(self._emit_params)
-            elif hasattr(widget, 'textChanged'):
-                widget.textChanged.connect(self._emit_params)
-
     def _random_seed(self):
         import random
         self.seed_input.setValue(random.randint(0, 999999))
@@ -215,14 +215,25 @@ class ParamPanel(QWidget):
     def _on_edit_toggle(self, checked: bool):
         self.edit_toggle.setText("🔧 退出编辑" if checked else "✏️ 进入编辑")
         self.edit_tool_combo.setEnabled(checked)
+        self.terrain_combo.setEnabled(checked)
         self.settlement_type_combo.setEnabled(checked)
         self.edit_mode_toggled.emit(checked)
 
     def _on_edit_tool_change(self, idx: int):
         self.settlement_type_combo.setEnabled(idx == 1)
+        self.terrain_combo.setEnabled(idx == 0)
 
-    def _emit_params(self):
-        pass  # 由 get_params 按需获取
+    TERRAIN_MAP = {
+        "平原": "plains", "森林": "forest", "密林": "dense_forest",
+        "雨林": "rainforest", "针叶林": "taiga",
+        "丘陵": "hills", "山地": "mountains",
+        "沙漠": "desert", "稀树草原": "savanna", "冻土": "tundra",
+    }
+
+    def _on_terrain_change(self, idx: int):
+        name = self.terrain_combo.currentText()
+        biome = self.TERRAIN_MAP.get(name, "plains")
+        self.terrain_changed.emit(biome)
 
     def get_params(self) -> dict:
         """获取所有参数"""

@@ -1,9 +1,8 @@
 """
-特性生成系统 — 河流、季风、聚落、道路、资源、航线
+特性生成系统 — 河流、聚落、道路、资源、航线
 """
 from __future__ import annotations
-import math
-import random
+from heapq import heappush, heappop
 from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
@@ -231,7 +230,7 @@ class FeatureGenerator:
 
         return score
 
-    def generate_roads(self, rng: np.random.Generator) -> List[Tuple[HexCoord, HexCoord]]:
+    def generate_roads(self) -> List[Tuple[HexCoord, HexCoord]]:
         """道路生成 — 连接聚落之间的路径"""
         # 收集所有有聚落的六边形
         settlements = [(hc, td) for hc, td in self.terrain.items()
@@ -273,8 +272,6 @@ class FeatureGenerator:
     def _find_road_path(self, start: HexCoord, end: HexCoord,
                         max_steps: int = 100) -> List[HexCoord]:
         """A* 寻路找到两个聚落之间的道路路径"""
-        from heapq import heappush, heappop
-
         open_set = [(0, 0, start)]
         came_from: Dict[HexCoord, Optional[HexCoord]] = {start: None}
         g_score: Dict[HexCoord, float] = {start: 0.0}
@@ -367,20 +364,15 @@ class FeatureGenerator:
             return []
 
         routes = []
-        used_pairs = set()
 
         for i, hc1 in enumerate(coastal_settlements):
             for j, hc2 in enumerate(coastal_settlements):
                 if i >= j:
                     continue
-                pair = (hc1, hc2) if hc1.q < hc2.q or (hc1.q == hc2.q and hc1.r < hc2.r) else (hc2, hc1)
-                if pair in used_pairs:
-                    continue
 
                 # 距离适中才建航线
                 dist = hc1.distance_to(hc2)
                 if 5 < dist < 30 and rng.random() < 0.4:
-                    used_pairs.add(pair)
                     routes.append((hc1, hc2))
 
                     # 标记航线经过的六边形

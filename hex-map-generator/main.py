@@ -3,13 +3,13 @@
 """
 from __future__ import annotations
 import sys
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QTimer, Signal
-from PySide6.QtGui import QAction, QColor, QFont, QKeySequence
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QSplitter, QWidget, QVBoxLayout,
-    QHBoxLayout, QStatusBar, QLabel, QMessageBox, QFileDialog,
+    QApplication, QMainWindow, QSplitter,
+    QStatusBar, QLabel, QMessageBox,
 )
 
 import numpy as np
@@ -160,6 +160,9 @@ class MainWindow(QMainWindow):
                 ]
             )
         )
+        panel.terrain_changed.connect(
+            lambda v: setattr(self.map_widget, 'edit_terrain', v)
+        )
         panel.settlement_type_combo.currentIndexChanged.connect(
             lambda: setattr(
                 self.map_widget, 'edit_settlement_type',
@@ -205,11 +208,11 @@ class MainWindow(QMainWindow):
         # 3. 生成噪声数据
         noise_gen = NoiseGenerator(seed=seed)
         self.elevation = noise_gen.generate_elevation(
-            coords_xy, scale=noise_scale, water_level=water_level
+            coords_xy, scale=noise_scale
         )
         monsoon_angle = monsoon_dir if monsoon_dir is not None else 90.0
         self.moisture = noise_gen.generate_moisture(
-            coords_xy, self.elevation, water_level,
+            coords_xy, self.elevation,
             scale=noise_scale * 1.2,
             monsoon_dir=monsoon_angle
         )
@@ -238,7 +241,7 @@ class MainWindow(QMainWindow):
         )
 
         # 道路
-        feature_gen.generate_roads(rng)
+        feature_gen.generate_roads()
 
         # 资源
         feature_gen.generate_resources(rng, density=resource_density)

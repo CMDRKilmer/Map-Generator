@@ -5,12 +5,12 @@ from __future__ import annotations
 import math
 from typing import Dict, List, Optional, Tuple
 
-from PySide6.QtCore import Qt, QPointF, QRectF, Signal, QPoint
+from PySide6.QtCore import Qt, QPointF, QRectF, Signal
 from PySide6.QtGui import (
-    QPainter, QPainterPath, QColor, QPen, QBrush,
-    QFont, QFontMetrics, QPolygonF, QTransform,
+    QPainter, QColor, QPen, QBrush,
+    QFont, QFontMetrics, QPolygonF,
 )
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PySide6.QtWidgets import QWidget
 
 import numpy as np
 
@@ -140,14 +140,11 @@ class MapWidget(QWidget):
         )
 
         # 视锥裁剪 - 只绘制可见区域的六边形
-        visible_rect = painter.viewport()
         vis_center_x = self.width() / 2 + self.pan_offset.x()
         vis_center_y = self.height() / 2 + self.pan_offset.y()
         vis_radius = math.sqrt(
             (self.width() / 2) ** 2 + (self.height() / 2) ** 2
         ) + self.hex_size * 2
-        # 用六边形距离估算可见范围
-        approx_hex_radius = max(1, int(vis_radius / (self.hex_size * 1.5)) + 5)
 
         for hc in self.hex_grid.hexes:
             td = self.terrain_data.get(hc)
@@ -305,12 +302,7 @@ class MapWidget(QWidget):
                 continue
             cx, cy = self.hex_grid.hex_center(hc, self.hex_size)
 
-            # 资源图标
-            symbols = {
-                "wood": "🌲", "iron": "⛏", "gold": "◆",
-                "food": "🌾", "stone": "🪨",
-            }
-            # 用简单符号代替 emoji（更好的跨平台支持）
+            # 用字母符号表示资源类型（跨平台兼容）
             text_symbols = {
                 "wood": "W", "iron": "I", "gold": "G",
                 "food": "F", "stone": "S",
