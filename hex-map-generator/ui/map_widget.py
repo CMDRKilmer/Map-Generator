@@ -136,16 +136,18 @@ class MapWidget(QWidget):
     def paintEvent(self, event):
         if not self.hex_grid:
             painter = QPainter(self)
-            painter.fillRect(self.rect(), QColor(40, 40, 40))
-            painter.setPen(Qt.white)
-            painter.drawText(self.rect(), Qt.AlignCenter, "请生成地图")
+            painter.fillRect(self.rect(), QColor(22, 22, 30))
+            painter.setPen(QColor(100, 130, 180))
+            font = QFont("Microsoft YaHei", 12)
+            painter.setFont(font)
+            painter.drawText(self.rect(), Qt.AlignCenter, "🗺️ 点击「生成地图」开始探索")
             return
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # 背景
-        painter.fillRect(self.rect(), QColor(30, 30, 40))
+        # 背景 - 使用主题色
+        painter.fillRect(self.rect(), QColor(22, 22, 30))
 
         # 应用平移
         painter.save()
