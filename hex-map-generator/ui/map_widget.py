@@ -136,16 +136,18 @@ class MapWidget(QWidget):
     def paintEvent(self, event):
         if not self.hex_grid:
             painter = QPainter(self)
-            painter.fillRect(self.rect(), QColor(40, 40, 40))
-            painter.setPen(Qt.white)
-            painter.drawText(self.rect(), Qt.AlignCenter, "请生成地图")
+            painter.fillRect(self.rect(), QColor(22, 22, 30))
+            painter.setPen(QColor(100, 130, 180))
+            font = QFont("Microsoft YaHei", 12)
+            painter.setFont(font)
+            painter.drawText(self.rect(), Qt.AlignCenter, "🗺️ 点击「生成地图」开始探索")
             return
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
-        # 背景
-        painter.fillRect(self.rect(), QColor(30, 30, 40))
+        # 背景 - 使用主题色
+        painter.fillRect(self.rect(), QColor(22, 22, 30))
 
         # 应用平移
         painter.save()
@@ -168,8 +170,8 @@ class MapWidget(QWidget):
 
             # 快速可见性测试
             cx, cy = self.hex_grid.hex_center(hc, self.hex_size)
-            dx = cx - (self.width() / 2 - vis_center_x)
-            dy = cy - (self.height() / 2 - vis_center_y)
+            dx = cx - vis_center_x
+            dy = cy - vis_center_y
             if dx * dx + dy * dy > vis_radius * vis_radius:
                 # 粗略跳过 — 只对大地图有效
                 if self.hex_grid.size > 30:

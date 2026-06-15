@@ -26,6 +26,7 @@ from core.terrain_gen import TerrainData, TerrainGenerator
 from export.exporter import MapExporter
 from ui.map_widget import MapWidget
 from ui.param_panel import ParamPanel
+from ui.styles import get_palette, get_stylesheet
 
 
 class MainWindow(QMainWindow):
@@ -35,6 +36,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("六边形地图生成器")
         self.setMinimumSize(1200, 800)
+
+        # 应用主题
+        self._apply_theme()
 
         # 核心组件
         self.hex_grid: Optional[HexGrid] = None
@@ -50,6 +54,11 @@ class MainWindow(QMainWindow):
 
         # 启动时自动生成一张地图
         QTimer.singleShot(100, self.generate_map)
+
+    def _apply_theme(self):
+        """应用暗色主题"""
+        self.setStyleSheet(get_stylesheet())
+        QApplication.setPalette(get_palette())
 
     def _setup_ui(self):
         """构建 UI"""
@@ -72,10 +81,18 @@ class MainWindow(QMainWindow):
 
         # 状态栏
         self.status_bar = QStatusBar()
+        self.status_bar.setStyleSheet("""
+            QStatusBar {
+                background-color: #1e1e28;
+                color: #808098;
+                border-top: 1px solid #373748;
+                padding: 4px 12px;
+            }
+        """)
         self.setStatusBar(self.status_bar)
-        self.coord_label = QLabel("坐标: -")
-        self.terrain_label = QLabel("地形: -")
-        self.hex_count_label = QLabel("六边形: -")
+        self.coord_label = QLabel("📍 坐标: -")
+        self.terrain_label = QLabel("🌍 地形: -")
+        self.hex_count_label = QLabel("⬡ 六边形: -")
         self.status_bar.addWidget(self.coord_label)
         self.status_bar.addPermanentWidget(self.terrain_label)
         self.status_bar.addPermanentWidget(self.hex_count_label)
@@ -256,15 +273,35 @@ class MainWindow(QMainWindow):
         )
 
         # 更新状态栏
-        self.hex_count_label.setText(f"六边形: {len(self.hex_grid.hexes)}")
+        water_count = sum(1 for td in self.terrain_data.values() if td.is_water)
+        land_count = len(self.terrain_data) - water_count
+        self.hex_count_label.setText(
+            f"⬡ 六边形: {len(self.hex_grid.hexes)} | 🌊 水域: {water_count} | 🌍 陆地: {land_count}"
+        )
 
         # 适配视图
         self.map_widget.fit_to_view()
 
     def _on_hex_hovered(self, hc: HexCoord, td: TerrainData):
         """鼠标悬停时更新状态栏"""
-        self.coord_label.setText(f"坐标: ({hc.q}, {hc.r})")
-        self.terrain_label.setText(f"地形: {td.biome} | 高程: {td.elevation:.2f}")
+        self.coord_label.setText(f"📍 坐标: ({hc.q}, {hc.r})")
+
+        # 构建详细的地形信息
+        info_parts = [f"🌍 {td.biome}"]
+        info_parts.append(f"⛰️ {td.elevation:.2f}")
+
+        if td.is_water:
+            info_parts.append("🌊 水域")
+        if td.river_flow > 0:
+            info_parts.append("💧 河流")
+        if td.settlement != 0:
+            settlement_names = {1: "🏘️", 2: "🏰", 3: "🌆", 4: "👑"}
+            info_parts.append(f"{settlement_names.get(td.settlement, '')} {td.settlement_name}")
+        if td.resource:
+            resource_icons = {"wood": "🌲", "iron": "⛏️", "gold": "💰", "food": "🌾", "stone": "🪨"}
+            info_parts.append(f"{resource_icons.get(td.resource, '💎')} {td.resource}")
+
+        self.terrain_label.setText(" | ".join(info_parts))
 
     def _on_hex_edited(self, hc: HexCoord):
         """六边形被编辑后更新状态"""
