@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六边形地图预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0e0e16;
+    color: #e6e6f0;
+    font-family: 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  h1 {
+    font-size: 24px;
+    color: #78b4ff;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #808098;
+    font-size: 14px;
+  }
+  .map-card {
+    background: #1a1a24;
+    border: 1px solid #373748;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .map-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #373748;
+  }
+  .map-name {
+    font-size: 18px;
+    color: #e6e6f0;
+  }
+  .map-name strong {
+    color: #78b4ff;
+  }
+  .map-meta {
+    color: #808098;
+    font-size: 13px;
+  }
+  .map-meta span {
+    margin: 0 8px;
+  }
+  .map-meta span::before {
+    content: "•";
+    margin-right: 8px;
+    color: #5080c8;
+  }
+  .map-meta span:first-child::before {
+    content: "";
+    margin: 0;
+  }
+  .image-wrap {
+    background: #16161c;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .image-wrap img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  .actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .btn {
+    background: #3a3a4a;
+    color: #e6e6f0;
+    border: 1px solid #4a4a5c;
+    border-radius: 6px;
+    padding: 8px 20px;
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .btn:hover {
+    background: #5080c8;
+    border-color: #6090d8;
+  }
+  .legend {
+    background: #1a1a24;
+    border: 1px solid #373748;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  .legend h3 {
+    color: #78b4ff;
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .swatch {
+    width: 24px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🗺️ 六边形地图预览</h1>
+    <p class="subtitle">种子: 99999 | 地图大小: 60 (大)</p>
+  </header>
+
+  <div class="map-card">
+    <div class="map-title">
+      <div class="map-name">🌍 <strong>种子 99999</strong> — 完整地图</div>
+      <div class="map-meta">
+        <span>2000 × 1500</span>
+        <span>1.4 MB</span>
+        <span>暗色主题</span>
+      </div>
+    </div>
+    <div class="image-wrap">
+      <img src="map_seed_99999.png" alt="六边形地图 种子 99999">
+    </div>
+    <div class="actions">
+      <a class="btn" href="map_seed_99999.png" download>📥 下载图片</a>
+      <a class="btn" href="map_seed_99999.png" target="_blank">🔍 全屏查看</a>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h3>🏷️ 地图图例</h3>
+    <div class="legend-grid">
+      <div class="legend-item">
+        <div class="swatch" style="background: #dcb43c;"></div>
+        <span>★ 首都</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #b42828;"></div>
+        <span>城市 (带★)</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #c83c3c;"></div>
+        <span>城镇</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #dc8c3c;"></div>
+        <span>村庄</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #468ce6;"></div>
+        <span>河流</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #a07850;"></div>
+        <span>道路</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #2856b0; background: linear-gradient(to right, transparent 50%, #2856b0 50%); background-size: 6px 100%;"></div>
+        <span>航线</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #50b464;"></div>
+        <span>W 木材</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #8c828c;"></div>
+        <span>I 铁矿</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #d2b428;"></div>
+        <span>G 黄金</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #c8b450;"></div>
+        <span>F 粮食</span>
+      </div>
+      <div class="legend-item">
+        <div class="swatch" style="background: #968c82;"></div>
+        <span>S 石材</span>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
