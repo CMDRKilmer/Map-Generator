@@ -136,10 +136,11 @@ class NoiseGenerator:
             # 映射到 0~1
             elevation[i] = (val + 1.0) * 0.5
 
-        # 标准化
-        e_min, e_max = elevation.min(), elevation.max()
-        if e_max - e_min > 0.001:
-            elevation = (elevation - e_min) / (e_max - e_min)
+        # 标准化（处理空数组情况）
+        if n > 0:
+            e_min, e_max = elevation.min(), elevation.max()
+            if e_max - e_min > 0.001:
+                elevation = (elevation - e_min) / (e_max - e_min)
 
         return elevation
 
