@@ -276,9 +276,7 @@ class MainWindow(QMainWindow):
         water_count = sum(1 for td in self.terrain_data.values() if td.is_water)
         land_count = len(self.terrain_data) - water_count
         self.hex_count_label.setText(
-            f"⬡ 六边形: {len(self.hex_grid.hexes)} | "
-            f"🌊 水域: {water_count} | "
-            f"🌍 陆地: {land_count}"
+            f"⬡ 六边形: {len(self.hex_grid.hexes)} | 🌊 水域: {water_count} | 🌍 陆地: {land_count}"
         )
 
         # 适配视图

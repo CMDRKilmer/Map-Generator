@@ -258,6 +258,7 @@ class ParamPanel(QWidget):
 
     def _random_seed(self):
         import random
+
         self.seed_input.setValue(random.randint(0, 999999))
 
     def _on_layer_change(self, idx: int):

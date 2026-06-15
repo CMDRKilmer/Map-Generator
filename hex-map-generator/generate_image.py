@@ -29,6 +29,7 @@ from utils.colors import BIOME_COLORS, FEATURE_COLORS
 
 _app = None
 
+
 def draw_map(seed=42, size=40, output_path="generated_map.png", img_w=1600, img_h=1200):
     """直接生成地图图片"""
     global _app
@@ -61,7 +62,9 @@ def draw_map(seed=42, size=40, output_path="generated_map.png", img_w=1600, img_
     rng = np.random.Generator(np.random.PCG64(seed + 42))
     feature_gen = FeatureGenerator(terrain_data, hex_coords_list)
     feature_gen.generate_rivers(rng, num_rivers=12)
-    feature_gen.generate_settlements(rng, num_villages=10, num_towns=5, num_cities=2, has_capital=True)
+    feature_gen.generate_settlements(
+        rng, num_villages=10, num_towns=5, num_cities=2, has_capital=True
+    )
     feature_gen.generate_roads()
     feature_gen.generate_resources(rng, density=0.08)
     feature_gen.generate_shipping_routes(rng)
@@ -260,7 +263,9 @@ def draw_map(seed=42, size=40, output_path="generated_map.png", img_w=1600, img_
 
 
 if __name__ == "__main__":
-    output = draw_map(seed=42, size=40, output_path="/workspace/hex-map-generator/generated_map.png")
+    output = draw_map(
+        seed=42, size=40, output_path="/workspace/hex-map-generator/generated_map.png"
+    )
     if output:
         print("\n🎉 成功生成地图图片!")
         print(f"   路径: {output}")

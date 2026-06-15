@@ -8,33 +8,34 @@ from PySide6.QtGui import QColor, QFont, QPalette
 # ========== 色彩系统 ==========
 class ThemeColors:
     """主题色彩"""
+
     # 主背景
-    BG_DARKEST = QColor(18, 18, 24)      # 最深背景
-    BG_DARK = QColor(28, 28, 36)         # 主背景
-    BG_CARD = QColor(38, 38, 48)         # 卡片背景
-    BG_HOVER = QColor(48, 48, 60)        # 悬停背景
-    BG_ACTIVE = QColor(55, 55, 70)       # 激活背景
+    BG_DARKEST = QColor(18, 18, 24)  # 最深背景
+    BG_DARK = QColor(28, 28, 36)  # 主背景
+    BG_CARD = QColor(38, 38, 48)  # 卡片背景
+    BG_HOVER = QColor(48, 48, 60)  # 悬停背景
+    BG_ACTIVE = QColor(55, 55, 70)  # 激活背景
 
     # 边框
-    BORDER = QColor(55, 55, 70)          # 普通边框
-    BORDER_HOVER = QColor(80, 80, 100)   # 悬停边框
-    BORDER_ACTIVE = QColor(100, 130, 180) # 激活边框
+    BORDER = QColor(55, 55, 70)  # 普通边框
+    BORDER_HOVER = QColor(80, 80, 100)  # 悬停边框
+    BORDER_ACTIVE = QColor(100, 130, 180)  # 激活边框
 
     # 文字
-    TEXT_PRIMARY = QColor(230, 230, 240)    # 主文字
+    TEXT_PRIMARY = QColor(230, 230, 240)  # 主文字
     TEXT_SECONDARY = QColor(160, 160, 180)  # 次要文字
-    TEXT_MUTED = QColor(100, 100, 120)      # 弱化文字
-    TEXT_ACCENT = QColor(100, 180, 255)     # 强调文字
+    TEXT_MUTED = QColor(100, 100, 120)  # 弱化文字
+    TEXT_ACCENT = QColor(100, 180, 255)  # 强调文字
 
     # 强调色
-    ACCENT_BLUE = QColor(80, 140, 220)      # 主强调色
+    ACCENT_BLUE = QColor(80, 140, 220)  # 主强调色
     ACCENT_BLUE_LIGHT = QColor(120, 180, 255)
     ACCENT_BLUE_DARK = QColor(50, 100, 180)
 
-    ACCENT_GOLD = QColor(220, 180, 60)      # 金色（用于重要操作）
-    ACCENT_GREEN = QColor(80, 180, 100)     # 绿色（成功）
-    ACCENT_RED = QColor(200, 80, 80)        # 红色（危险/删除）
-    ACCENT_PURPLE = QColor(150, 100, 200)   # 紫色（特殊）
+    ACCENT_GOLD = QColor(220, 180, 60)  # 金色（用于重要操作）
+    ACCENT_GREEN = QColor(80, 180, 100)  # 绿色（成功）
+    ACCENT_RED = QColor(200, 80, 80)  # 红色（危险/删除）
+    ACCENT_PURPLE = QColor(150, 100, 200)  # 紫色（特殊）
 
     # 地图相关
     MAP_BG = QColor(22, 22, 30)
@@ -45,6 +46,7 @@ class ThemeColors:
 # ========== 字体系统 ==========
 class ThemeFonts:
     """主题字体"""
+
     @staticmethod
     def title() -> QFont:
         font = QFont("Microsoft YaHei", 11, QFont.Bold)
