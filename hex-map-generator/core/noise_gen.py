@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import math
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -149,30 +149,33 @@ class NoiseGenerator:
         elevation: np.ndarray,
         scale: float = 4.0,
         octaves: int = 4,
-        monsoon_dir: float = 90.0,
+        monsoon_dir: Optional[float] = 90.0,
     ) -> np.ndarray:
         """
         生成湿度数据，受高程和季风影响
 
         Args:
-            monsoon_dir: 季风方向角度 (度)，0=北, 90=东
+            monsoon_dir: 季风方向角度 (度)，0=北, 90=东，None=无季风
 
         Returns:
             moisture: (N,) 0~1 的湿度值
         """
         n = len(hex_coords)
         moisture = np.zeros(n)
-        monsoon_rad = math.radians(monsoon_dir)
-        monsoon_dx = math.sin(monsoon_rad)
-        monsoon_dy = -math.cos(monsoon_rad)
+
+        if monsoon_dir is not None:
+            monsoon_rad = math.radians(monsoon_dir)
+            monsoon_dx = math.sin(monsoon_rad)
+            monsoon_dy = -math.cos(monsoon_rad)
 
         for i, (x, y) in enumerate(hex_coords):
             val = self.perlin.octave_noise(x, y, octaves=octaves, scale=scale)
             m = (val + 1.0) * 0.5
 
             # 季风效应：迎风坡湿润，背风坡干燥
-            wind_effect = (x * monsoon_dx + y * monsoon_dy) * 0.03
-            m += wind_effect
+            if monsoon_dir is not None:
+                wind_effect = (x * monsoon_dx + y * monsoon_dy) * 0.03
+                m += wind_effect
 
             # 高程效应：山地阻挡形成雨影
             if elevation[i] > 0.5:
