@@ -26,7 +26,7 @@ from core.terrain_gen import TerrainData, TerrainGenerator
 from export.exporter import MapExporter
 from ui.map_widget import MapWidget
 from ui.param_panel import ParamPanel
-from ui.styles import get_stylesheet, get_palette
+from ui.styles import get_palette, get_stylesheet
 
 
 class MainWindow(QMainWindow):
@@ -287,22 +287,22 @@ class MainWindow(QMainWindow):
     def _on_hex_hovered(self, hc: HexCoord, td: TerrainData):
         """鼠标悬停时更新状态栏"""
         self.coord_label.setText(f"📍 坐标: ({hc.q}, {hc.r})")
-        
+
         # 构建详细的地形信息
         info_parts = [f"🌍 {td.biome}"]
         info_parts.append(f"⛰️ {td.elevation:.2f}")
-        
+
         if td.is_water:
             info_parts.append("🌊 水域")
         if td.river_flow > 0:
-            info_parts.append(f"💧 河流")
+            info_parts.append("💧 河流")
         if td.settlement != 0:
             settlement_names = {1: "🏘️", 2: "🏰", 3: "🌆", 4: "👑"}
             info_parts.append(f"{settlement_names.get(td.settlement, '')} {td.settlement_name}")
         if td.resource:
             resource_icons = {"wood": "🌲", "iron": "⛏️", "gold": "💰", "food": "🌾", "stone": "🪨"}
             info_parts.append(f"{resource_icons.get(td.resource, '💎')} {td.resource}")
-        
+
         self.terrain_label.setText(" | ".join(info_parts))
 
     def _on_hex_edited(self, hc: HexCoord):

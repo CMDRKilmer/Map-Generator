@@ -2,31 +2,30 @@
 离屏生成地图图片 — 直接使用 QPainter 绘制
 """
 
+import math
 import os
 import sys
-import math
 
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
-from PySide6.QtCore import Qt, QPointF, QRectF
-from PySide6.QtGui import QImage, QPainter, QColor, QFont, QFontMetrics, QPen, QBrush, QPolygonF
+from PySide6.QtCore import QPointF, Qt
+from PySide6.QtGui import QBrush, QColor, QFont, QFontMetrics, QImage, QPainter, QPen, QPolygonF
 from PySide6.QtWidgets import QApplication
 
 from core.feature_gen import FeatureGenerator
-from core.hex_grid import HexCoord, HexGrid
+from core.hex_grid import HexGrid
 from core.noise_gen import NoiseGenerator
-from core.terrain_gen import TerrainData, TerrainGenerator
-from utils.colors import BIOME_COLORS, FEATURE_COLORS
 from core.terrain_gen import (
     SETTLEMENT_CAPITAL,
     SETTLEMENT_CITY,
     SETTLEMENT_NONE,
     SETTLEMENT_TOWN,
+    TerrainGenerator,
 )
-
+from utils.colors import BIOME_COLORS, FEATURE_COLORS
 
 _app = None
 
@@ -256,12 +255,12 @@ def draw_map(seed=42, size=40, output_path="generated_map.png", img_w=1600, img_
         print(f"   种子: {seed}, 地图大小: {size}")
         return output_path
     else:
-        print(f"❌ 保存图片失败")
+        print("❌ 保存图片失败")
         return None
 
 
 if __name__ == "__main__":
     output = draw_map(seed=42, size=40, output_path="/workspace/hex-map-generator/generated_map.png")
     if output:
-        print(f"\n🎉 成功生成地图图片!")
+        print("\n🎉 成功生成地图图片!")
         print(f"   路径: {output}")

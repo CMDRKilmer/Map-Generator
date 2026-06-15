@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ui.styles import ThemeColors, ThemeFonts
+from ui.styles import ThemeFonts
 
 
 class ParamPanel(QWidget):
