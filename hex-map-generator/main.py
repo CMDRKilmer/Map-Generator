@@ -216,7 +216,9 @@ class MainWindow(QMainWindow):
         self.hex_grid = HexGrid(size=size)
 
         # 2. 计算六边形中心像素坐标
-        hex_size = max(6, min(30, 500 / size))
+        # 防止 size=0 时除零崩溃
+        safe_size = max(1, size)
+        hex_size = max(6, min(30, 500 / safe_size))
         self.hex_coords_list = self.hex_grid.all_hex_centers(hex_size)
         self.coord_to_idx = {}
         for i, (hc, _, _) in enumerate(self.hex_coords_list):

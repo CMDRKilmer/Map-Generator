@@ -131,6 +131,10 @@ class NoiseGenerator:
         n = len(hex_coords)
         elevation = np.zeros(n)
 
+        # 空数组时直接返回空结果，避免 min/max 崩溃
+        if n == 0:
+            return elevation
+
         for i, (x, y) in enumerate(hex_coords):
             val = self.perlin.octave_noise(x, y, octaves=octaves, scale=scale)
             # 映射到 0~1
@@ -162,6 +166,11 @@ class NoiseGenerator:
         """
         n = len(hex_coords)
         moisture = np.zeros(n)
+
+        # 空数组时直接返回空结果，避免 min/max 崩溃
+        if n == 0:
+            return moisture
+
         monsoon_rad = math.radians(monsoon_dir)
         monsoon_dx = math.sin(monsoon_rad)
         monsoon_dy = -math.cos(monsoon_rad)
@@ -196,6 +205,10 @@ class NoiseGenerator:
         """
         n = len(hex_coords)
         temperature = np.zeros(n)
+
+        # 空数组时直接返回空结果，避免 min/max 崩溃
+        if n == 0:
+            return temperature
 
         # 找出y范围
         ys = [y for _, y in hex_coords]

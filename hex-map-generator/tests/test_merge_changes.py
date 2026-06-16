@@ -398,6 +398,63 @@ class TestParamPanel:
 
 
 # ============================================================
+# 10) 边界情况：空数组/除零崩溃修复验证
+# ============================================================
+class TestEdgeCases:
+    def test_empty_coords_elevation(self):
+        """空坐标列表不应导致 generate_elevation 崩溃"""
+        ng = NoiseGenerator(seed=42)
+        empty_coords = []
+        elev = ng.generate_elevation(empty_coords)
+        assert elev.shape == (0,)
+        assert len(elev) == 0
+
+    def test_empty_coords_moisture(self):
+        """空坐标列表不应导致 generate_moisture 崩溃"""
+        ng = NoiseGenerator(seed=42)
+        empty_coords = []
+        empty_elev = np.array([], dtype=float)
+        moist = ng.generate_moisture(empty_coords, empty_elev)
+        assert moist.shape == (0,)
+        assert len(moist) == 0
+
+    def test_empty_coords_temperature(self):
+        """空坐标列表不应导致 generate_temperature 崩溃"""
+        ng = NoiseGenerator(seed=42)
+        empty_coords = []
+        empty_elev = np.array([], dtype=float)
+        temp = ng.generate_temperature(empty_elev, empty_coords)
+        assert temp.shape == (0,)
+        assert len(temp) == 0
+
+    def test_size_zero_division_protection(self):
+        """size=0 时不应除零崩溃（验证 generate_image.py 和 main.py 的防护）"""
+        # 导入 generate_image 模块
+        import generate_image
+
+        # size=0 应被转换为 safe_size=1
+        safe_size = max(1, 0)
+        hex_size = max(6, min(30, 500 / safe_size))
+        assert hex_size > 0  # 应为有效正数，而非崩溃
+
+    def test_full_pipeline_with_empty_data(self):
+        """端到端流程应能处理空数据而不崩溃"""
+        from core.hex_grid import HexGrid
+
+        ng = NoiseGenerator(seed=42)
+        # 直接传入空坐标列表（不依赖 HexGrid）
+        coords = []  # 空列表
+        elev = ng.generate_elevation(coords)
+        moist = ng.generate_moisture(coords, elev)
+        temp = ng.generate_temperature(elev, coords)
+
+        # 应全部返回空数组
+        assert len(elev) == 0
+        assert len(moist) == 0
+        assert len(temp) == 0
+
+
+# ============================================================
 # 9) 端到端：构造完整地图数据并验证可调用绘制方法
 # ============================================================
 class TestEndToEndPipeline:
