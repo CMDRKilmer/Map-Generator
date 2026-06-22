@@ -137,9 +137,10 @@ class NoiseGenerator:
             elevation[i] = (val + 1.0) * 0.5
 
         # 标准化
-        e_min, e_max = elevation.min(), elevation.max()
-        if e_max - e_min > 0.001:
-            elevation = (elevation - e_min) / (e_max - e_min)
+        if n > 0:
+            e_min, e_max = elevation.min(), elevation.max()
+            if e_max - e_min > 0.001:
+                elevation = (elevation - e_min) / (e_max - e_min)
 
         return elevation
 
@@ -181,9 +182,10 @@ class NoiseGenerator:
             moisture[i] = np.clip(m, 0.0, 1.0)
 
         # 再次标准化
-        m_min, m_max = moisture.min(), moisture.max()
-        if m_max - m_min > 0.001:
-            moisture = (moisture - m_min) / (m_max - m_min)
+        if n > 0:
+            m_min, m_max = moisture.min(), moisture.max()
+            if m_max - m_min > 0.001:
+                moisture = (moisture - m_min) / (m_max - m_min)
 
         return moisture
 
@@ -196,6 +198,9 @@ class NoiseGenerator:
         """
         n = len(hex_coords)
         temperature = np.zeros(n)
+
+        if n == 0:
+            return temperature
 
         # 找出y范围
         ys = [y for _, y in hex_coords]
