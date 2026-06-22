@@ -231,11 +231,19 @@ class FeatureGenerator:
             "savanna": 8,
             "forest": 7,
             "dense_forest": 5,
+            "rainforest": 5,
             "hills": 6,
             "taiga": 4,
             "beach": 7,
             "desert": 2,
             "tundra": 1,
+            "swamp": 2,
+            "mountains": 3,
+            "high_mountains": -5,
+            "snow": 0,
+            "volcano": -10,
+            "lake": -5,
+            "ocean": -10,
         }
         score += biome_scores.get(td.biome, 0)
 
